@@ -1,0 +1,227 @@
+#include <Arduino.h>
+// BREADBOARD
+// const char buttonPin1 = PB11;
+// const char buttonPin2 = PA2;
+// const char potPin = PA6;
+// const char speakerPin = PA1;
+// const char shiftRegDataPin = PB5; //Common anode LED, active LOW
+// const char shiftRegOutputEnablePin = PB6; //active LOW
+// const char shiftRegStorageRegisterClockPin = PB7;
+// const char shiftRegDataClockPin = PB8;
+// const char shiftRegClearPin = PB9; //active LOW
+// const char barGraphDriverPin = PA0;
+// const char voltmeterPin = PA3;
+// const char inductorDriverPin = PB1;
+// const char inductorOutputPin = PA5;
+
+// const char buttonPin1 = PB11;
+// const char buttonPin2 = PA2;
+// const char potPin = PA6;
+const char speakerPin = PB9;
+const char shiftRegDataPin = PA0; //Common anode LED, active LOW
+const char shiftRegOutputEnablePin = PA1; //active LOW
+const char shiftRegStorageRegisterClockPin = PA2;
+const char shiftRegDataClockPin = PA3;
+const char shiftRegClearPin = PA4; //active LOW
+const char eightSegmentDisplayPin3 = PB0;
+const char eightSegmentDisplayPin2 = PA7;
+const char eightSegmentDisplayPin1 = PA6;
+const char barGraphDriverPin = PA8;
+const char voltmeterPin = PB8;
+const char inductorDriverPin = PB1;
+const char inductorOutputPin = PA5;
+
+// const char digitBits[] = {
+//     0b11101110,
+//     0b10000010,
+//     0b01110110,
+//     0b11010110,
+//     0b10011010,
+//     0b11011100,
+//     0b11111100, //6
+//     0b10000110,
+//     0b11111110,
+//     0b11011110  //9
+// };
+
+const char digitBits[] = {
+    0b10111110, //0
+    0b10000010, //1
+    0b11101100, //2
+    0b11100110, //3
+    0b11010010, //4
+    0b01110110, //5
+    0b01111110, //6
+    0b10100010, //7
+    0b11111110, //8
+    0b11110110  //9
+};
+
+void setup() {
+    // pinMode(buttonPin1, INPUT);
+    // pinMode(buttonPin2, INPUT);
+    // pinMode(potPin, INPUT);
+    pinMode(speakerPin, OUTPUT);
+    pinMode(shiftRegDataPin, OUTPUT);
+    pinMode(shiftRegOutputEnablePin, OUTPUT);
+    pinMode(shiftRegStorageRegisterClockPin, OUTPUT);
+    pinMode(shiftRegDataClockPin, OUTPUT);
+    pinMode(shiftRegClearPin, OUTPUT);
+    pinMode(barGraphDriverPin, OUTPUT);
+    pinMode(voltmeterPin, OUTPUT);
+    pinMode(inductorDriverPin, OUTPUT);
+    pinMode(inductorOutputPin, INPUT);
+    pinMode(eightSegmentDisplayPin1, OUTPUT);
+    pinMode(eightSegmentDisplayPin2, OUTPUT);
+    pinMode(eightSegmentDisplayPin3, OUTPUT);
+
+    digitalWrite(eightSegmentDisplayPin1, HIGH);
+    digitalWrite(eightSegmentDisplayPin2, HIGH);
+    digitalWrite(eightSegmentDisplayPin3, HIGH);
+
+    digitalWrite(shiftRegOutputEnablePin, LOW);
+    digitalWrite(shiftRegClearPin, LOW);
+    digitalWrite(shiftRegClearPin, HIGH);
+    digitalWrite(shiftRegDataClockPin, LOW);
+}
+
+unsigned char barGraphValue = 0;
+void setBarGraph(unsigned short inputValue) {
+    barGraphValue = map(inputValue, 0, 4095, 90, 0);
+    analogWrite(barGraphDriverPin, barGraphValue);
+}
+
+unsigned int speakerPeriod = 0;
+unsigned char speakerValue = 0;
+void pulseSpeaker(unsigned short inputValue) {
+    // speakerPeriod = map(potValue, 0, 4095, 100, 16000); // 16k max
+    // if(potValue < 3900) {
+    //     digitalWrite(speakerPin, HIGH);
+    //     delayMicroseconds(speakerPeriod);
+    //     digitalWrite(speakerPin, LOW);
+    //     delayMicroseconds(speakerPeriod);
+    // }
+
+    speakerValue = map(inputValue, 0, 4095, 50, 0);
+    analogWrite(speakerPin, speakerValue);
+}
+
+// char digit = 0;
+// unsigned char digitPrevious = 0;
+// void displayDigits(unsigned short potValue) {
+//     digitPrevious = digit;
+//     digit = map(potValue, 0, 4095, 9, -1);
+//     if (digit == -1) {
+//         digit = 0;
+//     }
+//     if(digit != digitPrevious) {
+//         for(char i = 0; i < 8; i++) {
+//             digitalWrite(shiftRegDataPin, ~digitBits[digit] >> i & 0b00000001);
+//             digitalWrite(shiftRegDataClockPin, HIGH);
+//             digitalWrite(shiftRegDataClockPin, LOW);
+//         }
+//         digitalWrite(shiftRegStorageRegisterClockPin, HIGH);
+//         digitalWrite(shiftRegStorageRegisterClockPin, LOW);
+//     }
+// }
+unsigned short number = 0;
+unsigned int digit = 0;
+unsigned char display = 0;
+unsigned char tick = 0;
+void displayDigits(unsigned short inputValue) {
+    if(tick == 26) {
+        number = map(inputValue, 0, 4095, 999, 0);  
+        tick = 0;
+    }
+    tick++;
+    if(display == 0) {
+            digitalWrite(eightSegmentDisplayPin1, HIGH);
+            digitalWrite(eightSegmentDisplayPin2, LOW);
+            digitalWrite(eightSegmentDisplayPin3, LOW);
+            digit = number / 100;
+    }
+    if(display == 1) {
+            digitalWrite(eightSegmentDisplayPin1, LOW);
+            digitalWrite(eightSegmentDisplayPin2, HIGH);
+            digitalWrite(eightSegmentDisplayPin3, LOW);
+            digit = (number / 10) % 10;
+    }
+    if(display == 2) {
+            digitalWrite(eightSegmentDisplayPin1, LOW);
+            digitalWrite(eightSegmentDisplayPin2, LOW);
+            digitalWrite(eightSegmentDisplayPin3, HIGH);
+            digit = number % 10;
+    }
+
+    display++;
+    if(display > 2) {
+        display = 0;
+    }
+    if(true) {
+        for(char i = 0; i < 8; i++) {
+            digitalWrite(shiftRegDataPin, ~digitBits[digit] >> i & 0b00000001);
+            digitalWrite(shiftRegDataClockPin, HIGH);
+            digitalWrite(shiftRegDataClockPin, LOW);
+        }
+        digitalWrite(shiftRegStorageRegisterClockPin, HIGH);
+        digitalWrite(shiftRegStorageRegisterClockPin, LOW);
+    }
+}
+
+
+void pulseVoltmeter(unsigned short inputValue) {
+    char voltmeterValue = 0;
+    voltmeterValue = map(inputValue, 0, 4095, 255, 0);
+    analogWrite(voltmeterPin, voltmeterValue);
+}
+
+void pulseInductor(unsigned short pulseWidth) {
+    delayMicroseconds(6666);
+    digitalWrite(inductorDriverPin, HIGH);
+    delayMicroseconds(pulseWidth);
+    digitalWrite(inductorDriverPin, LOW);
+}
+
+bool state = 0;
+bool statePrevious = 0;
+bool readButton(byte buttonPin) {
+    bool buttonActive = 0;
+    statePrevious = state;
+    state = digitalRead(buttonPin);
+    if(state != statePrevious && state != 0) {
+        buttonActive = true;
+    } else {
+        buttonActive = false;
+    }
+    return buttonActive;
+}
+
+unsigned short readInductor() {
+    return analogRead(inductorOutputPin);
+}
+
+void loop() {
+    // unsigned short potValue = analogRead(potPin); // 255 max
+    // readButton(buttonPin1);
+    // setBarGraph(potValue);
+    // pulseVoltmeter(potValue);
+    // pulseSpeaker(potValue); 
+    // displayDigits(potValue);
+    
+    
+    pulseInductor(700); // 700 us pulse width
+    delayMicroseconds(40); // measure after 4 us
+    unsigned short inductorValue = readInductor();
+    // inductorValue = map(inductorValue, 2105, 2554, 3500, 700);
+    if(inductorValue < 2255) {
+        inductorValue = 4095;
+    } else if(inductorValue > 2674) {
+        inductorValue = 0;
+    } else {
+        inductorValue = map(inductorValue, 2255, 2674, 4095, 0); 
+    }
+    setBarGraph(inductorValue);
+    pulseVoltmeter(inductorValue);
+    pulseSpeaker(inductorValue); 
+    displayDigits(inductorValue);
+}
