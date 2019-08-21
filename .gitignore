@@ -9,3 +9,5 @@ src/backup.cpp1
 test
 include
 lib
+.travis.yml
+.vscode
