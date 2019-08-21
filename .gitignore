@@ -5,3 +5,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 src/backup.cpp1
+*.bin
+./test
+./include
+./lib

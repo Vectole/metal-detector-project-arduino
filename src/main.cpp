@@ -68,34 +68,35 @@ unsigned char display = 0;
 unsigned char tick = 0;
 void displayDigits(unsigned short inputValue) {
     unsigned int digit = 0;
-    if(tick == 26) {
+    if(tick == 0) {
         number = map(inputValue, 0, 4095, 999, 0);  
-        tick = 0;
-    }
-    tick++;
-    if(display == 0) {
-            digitalWrite(eightSegmentDisplayPin1, HIGH);
-            digitalWrite(eightSegmentDisplayPin2, LOW);
-            digitalWrite(eightSegmentDisplayPin3, LOW);
-            digit = number / 100; // most significant digit
-    }
-    if(display == 1) {
-            digitalWrite(eightSegmentDisplayPin1, LOW);
-            digitalWrite(eightSegmentDisplayPin2, HIGH);
-            digitalWrite(eightSegmentDisplayPin3, LOW);
-            digit = (number / 10) % 10; // middle digit
-    }
-    if(display == 2) {
-            digitalWrite(eightSegmentDisplayPin1, LOW);
-            digitalWrite(eightSegmentDisplayPin2, LOW);
-            digitalWrite(eightSegmentDisplayPin3, HIGH);
-            digit = number % 10; // least signifcant digit
+        tick = 25;
+    } else {
+        tick--;
     }
 
-    display++;
-    if(display > 2) {
+    if(display == 0) {
+        digitalWrite(eightSegmentDisplayPin1, HIGH);
+        digitalWrite(eightSegmentDisplayPin2, LOW);
+        digitalWrite(eightSegmentDisplayPin3, LOW);
+        digit = number / 100; // most significant digit
+        display++;
+    }
+    if(display == 1) {
+        digitalWrite(eightSegmentDisplayPin1, LOW);
+        digitalWrite(eightSegmentDisplayPin2, HIGH);
+        digitalWrite(eightSegmentDisplayPin3, LOW);
+        digit = (number / 10) % 10; // middle digit
+        display++;
+    }
+    if(display == 2) {
+        digitalWrite(eightSegmentDisplayPin1, LOW);
+        digitalWrite(eightSegmentDisplayPin2, LOW);
+        digitalWrite(eightSegmentDisplayPin3, HIGH);
+        digit = number % 10; // least signifcant digit
         display = 0;
     }
+
     for(char i = 0; i < 8; i++) {
         digitalWrite(shiftRegDataPin, ~digitBits[digit] >> i & 0b00000001);
         digitalWrite(shiftRegDataClockPin, HIGH);
