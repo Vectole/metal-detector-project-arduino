@@ -6,6 +6,6 @@
 .vscode/launch.json
 src/backup.cpp1
 *.bin
-./test
-./include
-./lib
+test
+include
+lib
