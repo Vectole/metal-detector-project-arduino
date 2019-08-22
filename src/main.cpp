@@ -81,15 +81,13 @@ void displayDigits(unsigned short inputValue) {
         digitalWrite(eightSegmentDisplayPin3, LOW);
         digit = number / 100; // most significant digit
         display++;
-    }
-    if(display == 1) {
+    } else if(display == 1) {
         digitalWrite(eightSegmentDisplayPin1, LOW);
         digitalWrite(eightSegmentDisplayPin2, HIGH);
         digitalWrite(eightSegmentDisplayPin3, LOW);
         digit = (number / 10) % 10; // middle digit
         display++;
-    }
-    if(display == 2) {
+    } else if(display == 2) {
         digitalWrite(eightSegmentDisplayPin1, LOW);
         digitalWrite(eightSegmentDisplayPin2, LOW);
         digitalWrite(eightSegmentDisplayPin3, HIGH);
